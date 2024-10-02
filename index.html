@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wait</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+        }
+
+        #number {
+            font-size: 800px;
+            font-weight: bold;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+            -webkit-text-stroke: 12px rgb(250, 34, 124);
+            text-shadow: rgb(250, 34, 124) 2px 0 300px;
+        }
+        #instructions {
+            font-size: 72px;
+            -webkit-text-stroke: 3px black;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="background-video" autoplay muted loop>
+        <source src="video1.mp4" type="video/mp4">
+    </video>
+
+    <div id="wrapper">
+        <div id="instructions"></div>
+        <div id="number"></div>
+    </div>
+
+    <script>
+        const excludedNumbers = [25, 24, 9, 46, 12];
+
+        let videos = ['video1.mp4', 'video2.mp4', 'video3.mp4', 'video4.mp4', 'video5.mp4'];
+        let currentVideoIndex = 0;
+        let instructionsArray = ['Waiting is a matter of patience and not urgency', 'Your number is coming up', 'Sən hələ çox gözləyərsən))', 'Bıde gələəəə','Cколько лет, сколько зим', 'It\'ll only take a bit...', 'We are trying hard...', 'Soon','Ждем...а кого вот?'];
+
+        function getRandomNumber() {
+            let num;
+            do {
+                num = Math.floor(Math.random() * 150) + 1;
+            } while (excludedNumbers.includes(num));
+            return num;
+        }
+
+        const videoElement = document.getElementById('background-video');
+        videoElement.addEventListener('ended', function () {
+            changeVideo();
+        });
+
+        function changeVideo() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
+            videoElement.play();
+        }
+
+        function changeNumberAndInstruction() {
+            const numberElement = document.getElementById('number');
+            const instructionElement = document.getElementById('instructions');
+
+            numberElement.style.opacity = 0;
+            instructionElement.style.opacity = 0;
+
+            setTimeout(() => {
+                let randomN = getRandomNumber();
+                let instructionIndex = Math.floor(Math.random() * instructionsArray.length);
+
+                numberElement.innerText = randomN;
+                instructionElement.innerText = instructionsArray[instructionIndex];
+
+                numberElement.style.opacity = 1;
+                instructionElement.style.opacity = 1;
+            }, 1000);
+        }
+
+        changeNumberAndInstruction();
+
+        setInterval(changeNumberAndInstruction, 20000);
+    </script>
+</body>
+
+</html>
