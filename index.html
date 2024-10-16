@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wait</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.3/Tone.js" integrity="sha512-l/S587UA2X7JyCkDqZiEX+4OC6Hp8FC0PE1MFi3+KFLk3n1lxQAtSq8YTZ4ig2YFpJal2Jhz3H3iIFyv3KScFA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         body,
         html {
@@ -19,6 +20,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
+            width: 100%;
             transform: translate(-50%, -50%);
             text-align: center;
             color: white;
@@ -27,27 +29,18 @@
         #number {
             font-size: 800px;
             font-weight: bold;
+            width: 100%;
             opacity: 1;
             transition: opacity 1s ease-in-out;
             -webkit-text-stroke: 12px rgb(250, 34, 124);
             text-shadow: rgb(250, 34, 124) 2px 0 300px;
         }
+
         #instructions {
             font-size: 72px;
             -webkit-text-stroke: 3px black;
             opacity: 1;
             transition: opacity 1s ease-in-out;
-        }
-
-
-        @keyframes fadeInOut {
-            0% {
-                opacity: 0;
-            }
-
-            100% {
-                opacity: 1;
-            }
         }
 
         #background-video {
@@ -63,8 +56,7 @@
 </head>
 
 <body>
-    <video id="background-video" autoplay muted loop>
-        <source src="video1.mp4" type="video/mp4">
+    <video id="background-video" autoplay muted>
     </video>
 
     <div id="wrapper">
@@ -73,11 +65,38 @@
     </div>
 
     <script>
-        const excludedNumbers = [25, 24, 9, 46, 12];
-
-        let videos = ['video1.mp4', 'video2.mp4', 'video3.mp4', 'video4.mp4', 'video5.mp4'];
+        const excludedNumbers = [16, 55, 48, 6, 31];
+        const chanceToPair = 0.2;
+        const rareNumberChance = 0.1;
+        const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4', 'video4.mp4', 'video5.mp4'];
+        const videoElement = document.getElementById('background-video');
         let currentVideoIndex = 0;
-        let instructionsArray = ['Waiting is a matter of patience and not urgency', 'Your number is coming up', 'Sən hələ çox gözləyərsən))', 'Bıde gələəəə','Cколько лет, сколько зим', 'It\'ll only take a bit...', 'We are trying hard...', 'Soon','Ждем...а кого вот?'];
+        let instructionsArray = [
+            'Waiting is a matter of patience...',
+            'Your number is coming up',
+            'Вижу сидите.....',
+            'Bu de gələ)))',
+            'Çox gözləyərsən...',
+            'Adə danışın da arada bu nədi mal-mal baxırsız',
+            'Может встанете?',
+            '............',
+            'We are working really hard',
+            'We are working hard',
+            'You, and some strangers...',
+        ];
+
+        // Set video handling logic
+        videoElement.src = videos[currentVideoIndex];
+        videoElement.load();
+        videoElement.play();
+        videoElement.addEventListener('ended', changeVideo);
+
+        function changeVideo() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
+            videoElement.load();
+            videoElement.play();
+        }
 
         function getRandomNumber() {
             let num;
@@ -87,39 +106,93 @@
             return num;
         }
 
-        const videoElement = document.getElementById('background-video');
-        videoElement.addEventListener('ended', function () {
-            changeVideo();
-        });
-
-        function changeVideo() {
-            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-            videoElement.src = videos[currentVideoIndex];
-            videoElement.play();
+        function getRandomOrRareNumber() {
+            if (Math.random() < rareNumberChance) {
+                return excludedNumbers[Math.floor(Math.random() * excludedNumbers.length)];
+            } else {
+                return getRandomNumber();
+            }
         }
 
         function changeNumberAndInstruction() {
             const numberElement = document.getElementById('number');
             const instructionElement = document.getElementById('instructions');
-
             numberElement.style.opacity = 0;
             instructionElement.style.opacity = 0;
 
             setTimeout(() => {
-                let randomN = getRandomNumber();
                 let instructionIndex = Math.floor(Math.random() * instructionsArray.length);
+                if (Math.random() < chanceToPair) {
+                    let firstNumber = getRandomNumber(), secondNumber = getRandomNumber();
+                    numberElement.innerText = `${firstNumber}, ${secondNumber}`;
+                } else {
+                    numberElement.innerText = getRandomOrRareNumber();
+                }
 
-                numberElement.innerText = randomN;
                 instructionElement.innerText = instructionsArray[instructionIndex];
-
                 numberElement.style.opacity = 1;
                 instructionElement.style.opacity = 1;
             }, 1000);
         }
 
         changeNumberAndInstruction();
-
         setInterval(changeNumberAndInstruction, 20000);
+
+        // Web Audio API for Queue Sound and Synth
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Function to create a distortion curve
+        function makeDistortionCurve(amount) {
+            const n_samples = 44100, curve = new Float32Array(n_samples), deg = Math.PI / 180;
+            for (let i = 0; i < n_samples; ++i) {
+                const x = i * 2 / n_samples - 1;
+                curve[i] = (3 + amount) * x * 20 * deg / (Math.PI + amount * Math.abs(x));
+            }
+            return curve;
+        }
+
+        // Function to play Queue Sound with random distortion
+        async function playQueueSound() {
+            const response = await fetch('./queue.mp3');
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+            const queueSource = audioCtx.createBufferSource();
+            queueSource.buffer = audioBuffer;
+
+            const distortion = audioCtx.createWaveShaper();
+            distortion.curve = makeDistortionCurve(Math.random() * 100);
+            distortion.oversample = '4x';
+
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0.7;
+
+            queueSource.connect(distortion).connect(gainNode).connect(audioCtx.destination);
+            queueSource.start();
+        }
+
+        // Play Queue Sound at random intervals (between 10s and 40s)
+        function playQueueAtRandom() {
+            const randomTime = Math.random() * (20000 - 10000) + 10000;
+            setTimeout(() => {
+                playQueueSound();
+                playQueueAtRandom();
+            }, randomTime);
+        }
+
+        playQueueAtRandom();  // Start the random playback loop
+
+        // Continuous Low Synth Background Sound
+        function playLowSynth() {
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(60, audioCtx.currentTime);  // Low tone
+            oscillator.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 999999);  // Play indefinitely
+        }
+
+        playLowSynth();  // Start low synth background sound
     </script>
 </body>
 
