@@ -79,6 +79,7 @@
             'Waiting is a matter of patience...',
             'Your number is coming up',
             'Your number may come up',
+            'Take a receipt and then',
             'Wait for your number',
             'Вижу сидите.....',
             'Bu de gələ)))',
@@ -90,7 +91,7 @@
             'We are working hard',
             'You, and the other you...',
             'Elə bilsəydim sən burdasan, çoxdan gələrdim.',
-            'I wouldnt want to be waiting alone.',
+            'I would not want to be waiting alone.',
             'Sən sən ol mənsiz burdan getmə.',
             'Dediklərimi başa düşənə qədər burdayıq.',
             'Ждали, но почему то ждали вместе.'
@@ -136,7 +137,7 @@
                 if (Math.random() < chanceToPair) {
                     let firstNumber = getRandomNumber(), secondNumber = getRandomNumber();
                     numberElement.innerText = `${firstNumber}, ${secondNumber}`;
-                    numberElement.style.fontSize = '600px';
+                    numberElement.style.fontSize = '400px';
                 } else {
                     numberElement.innerText = getRandomOrRareNumber();
                     numberElement.style.fontSize = '';
@@ -148,7 +149,7 @@
             }, 1000);
         }
         changeNumberAndInstruction();
-        setInterval(changeNumberAndInstruction, 20000);
+        setInterval(changeNumberAndInstruction, 18000);
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -172,30 +173,34 @@
             const queueSource = audioCtx.createBufferSource();
             queueSource.buffer = audioBuffer;
 
+            const volumeBoost = audioCtx.createGain();
+            volumeBoost.gain.value = 5;
+
             // 1. Add pitch variation (between -3% to +3% speed change)
             const pitchVariation = 1 + (Math.random() * 0.06 - 0.03); // -3% to +3%
             queueSource.playbackRate.setValueAtTime(pitchVariation, audioCtx.currentTime);
 
             // 2. Gentle distortion setup
             const distortion = audioCtx.createWaveShaper();
-            distortion.curve = makeGentleDistortionCurve(15);
+            distortion.curve = makeGentleDistortionCurve(50); // Adjust distortion amount
             distortion.oversample = '4x';
 
             // 3. Warm filter
             const filter = audioCtx.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.value = 3000;
+            filter.frequency.value = 5000;
 
             // 4. Optional: Add subtle wobble (vibrato)
             const vibrato = audioCtx.createOscillator();
             const vibratoGain = audioCtx.createGain();
-            vibrato.frequency.value = 1; // Slow wobble (0.5Hz)
+            vibrato.frequency.value = 0.7; // Slow wobble (0.5Hz)
             vibratoGain.gain.value = 0.001 * pitchVariation; // Tiny pitch variation
 
             // Routing
             vibrato.connect(vibratoGain).connect(queueSource.playbackRate);
             queueSource.connect(distortion)
                 .connect(filter)
+                .connect(volumeBoost)
                 .connect(audioCtx.destination);
 
             // Start
@@ -235,15 +240,15 @@
 
         function playSynthMelody() {
             const octave = 2;
-            const baseNotes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88]; // C4 to B4
-            const sequence = [0, 2, 4, 2, 0, 5, 3, 1];
+            const baseNotes = [261.63, 290.66]; // C4 to B4
+            const sequence = [0, 1];
             let currentStep = 0;
 
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
 
             oscillator.type = 'sine';
-            gainNode.gain.value = 0.8;
+            gainNode.gain.value = 0.6;
 
             const filter = audioCtx.createBiquadFilter();
             filter.type = 'lowpass';
@@ -264,7 +269,7 @@
                 );
 
                 currentStep++;
-                setTimeout(playNextNote, 3500);
+                setTimeout(playNextNote, 15000);
             }
 
             oscillator.frequency.setValueAtTime(baseNotes[0] * Math.pow(2, octave - 4), audioCtx.currentTime);
