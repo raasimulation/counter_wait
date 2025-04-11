@@ -238,11 +238,11 @@
 
         playQueueAtRandom();
 
-
         function playLowSynth() {
             const oscillator = audioCtx.createOscillator();
             oscillator.type = 'sine';
-            gainNode.gain.value = 0.8;
+            oscillator.frequency.setValueAtTime(60, audioCtx.currentTime);  // Low tone
+            oscillator.connect(audioCtx.destination);
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + 999999);  // Play indefinitely
         }
