@@ -174,7 +174,7 @@
             queueSource.buffer = audioBuffer;
 
             const volumeBoost = audioCtx.createGain();
-            volumeBoost.gain.value = 5;
+            volumeBoost.gain.value = 2;
 
             // 1. Add pitch variation (between -3% to +3% speed change)
             const pitchVariation = 1 + (Math.random() * 0.06 - 0.03); // -3% to +3%
