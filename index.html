@@ -238,6 +238,7 @@
 
         playQueueAtRandom();
 
+
         function playSynthMelody() {
             const octave = 2;
             const baseNotes = [261.63, 290.66]; // C4 to B4
@@ -248,6 +249,8 @@
             const gainNode = audioCtx.createGain();
 
             oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(60, audioCtx.currentTime);  // Low tone
+            oscillator.connect(audioCtx.destination);
             gainNode.gain.value = 1.2;
 
             const filter = audioCtx.createBiquadFilter();
@@ -258,6 +261,8 @@
             filter.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 999999);  // Play indefinitely
+
 
             function playNextNote() {
                 const noteIndex = sequence[currentStep % sequence.length];
