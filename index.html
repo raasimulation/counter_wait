@@ -239,53 +239,15 @@
         playQueueAtRandom();
 
 
-        function playSynthMelody() {
-            const octave = 2;
-            const baseNotes = [261.63, 290.66]; // C4 to B4
-            const sequence = [0, 1];
-            let currentStep = 0;
-
+        function playLowSynth() {
             const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(60, audioCtx.currentTime);  // Low tone
-            oscillator.connect(audioCtx.destination);
-            gainNode.gain.value = 1.2;
-
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.value = 5000;
-
-            oscillator.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            gainNode.gain.value = 0.8;
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + 999999);  // Play indefinitely
-
-
-            function playNextNote() {
-                const noteIndex = sequence[currentStep % sequence.length];
-                const frequency = baseNotes[noteIndex] * Math.pow(2, octave - 4);
-
-                oscillator.frequency.exponentialRampToValueAtTime(
-                    frequency,
-                    audioCtx.currentTime + 0.3
-                );
-
-                currentStep++;
-                setTimeout(playNextNote, 15000);
-            }
-
-            oscillator.frequency.setValueAtTime(baseNotes[0] * Math.pow(2, octave - 4), audioCtx.currentTime);
-            playNextNote();
-
-            return { oscillator, gainNode };
         }
 
-        const synth = playSynthMelody();
-
-        playSynthMelody();
+        playLowSynth();
     </script>
 </body>
 
