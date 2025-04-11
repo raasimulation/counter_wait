@@ -246,7 +246,7 @@
             oscillator.frequency.setValueAtTime(50, audioCtx.currentTime);
 
             // Set the gain value (volume). 1 is normal, higher values are louder
-            gainNode.gain.value = 1.4;  // Try values between 1-5 for louder sound
+            gainNode.gain.value = 3;  // Try values between 1-5 for louder sound
 
             // Connect oscillator -> gain -> destination
             oscillator.connect(gainNode);
