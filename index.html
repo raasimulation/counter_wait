@@ -248,11 +248,11 @@
             const gainNode = audioCtx.createGain();
 
             oscillator.type = 'sine';
-            gainNode.gain.value = 0.6;
+            gainNode.gain.value = 1.2;
 
             const filter = audioCtx.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.value = 1000;
+            filter.frequency.value = 5000;
 
             oscillator.connect(filter);
             filter.connect(gainNode);
