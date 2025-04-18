@@ -105,9 +105,13 @@
 
         function changeVideo() {
             currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-            videoElement.src = videos[currentVideoIndex];
-            videoElement.load();
-            videoElement.play();
+            if (currentVideoIndex === 0) {
+                location.reload(); // Refresh the page
+            } else {
+                videoElement.src = videos[currentVideoIndex];
+                videoElement.load();
+                videoElement.play();
+            }
         }
 
         function getRandomNumber() {
@@ -240,20 +244,21 @@
 
         function playLowSynth() {
             const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();  // Create a gain node
+            const gainNode = audioCtx.createGain();
 
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(50, audioCtx.currentTime);
+            gainNode.gain.value = 5;
 
-            // Set the gain value (volume). 1 is normal, higher values are louder
-            gainNode.gain.value = 5;  // Try values between 1-5 for louder sound
-
-            // Connect oscillator -> gain -> destination
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
 
             oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 999999);
+
+            // Stop the oscillator after 20 minutes (20 * 60 * 1000 ms)
+            setTimeout(() => {
+                oscillator.stop();
+            }, 20 * 60 * 1000);
         }
 
         playLowSynth();
